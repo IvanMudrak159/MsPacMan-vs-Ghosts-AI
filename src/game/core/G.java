@@ -1175,4 +1175,47 @@ public class G implements Game
     public int getFruitType() { return fruitLoc == -1 ? -1 : fruitType; }
 
     public int getFruitValue() { return fruitLoc == -1 ? 0 : FruitValue[fruitType]; }
+
+	@Override
+	public int[] getAllPillIndicesActive() {
+		int[] activePills = getPillIndicesActive();
+		int[] activePowerPills = getPowerPillIndicesActive();
+		ArrayList<Integer> edibleGhosts = getEdibleGhostsPositions();
+		
+		int fruitLoc = getFruitLoc();
+		int fruitIndexSize = 0;
+		if(fruitLoc != -1) {
+			fruitIndexSize = 1;
+		}
+
+		int targetsSize = activePills.length+activePowerPills.length + edibleGhosts.size() + fruitIndexSize;
+
+		int[] targetsArray=new int[targetsSize];
+		
+		for(int i=0;i<activePills.length;i++)
+			targetsArray[i]=activePills[i];
+		
+		for(int i=0;i<activePowerPills.length;i++)
+			targetsArray[activePills.length+i]=activePowerPills[i];		
+
+		for (int i = 0; i < edibleGhosts.size(); i++)
+			targetsArray[activePills.length + activePowerPills.length + i] = edibleGhosts.get(i);
+			
+		if(fruitLoc != -1) {
+			targetsArray[targetsSize - 1] = fruitLoc;
+		}
+	
+
+		return targetsArray;
+	}
+
+	public ArrayList<Integer> getEdibleGhostsPositions() {
+		ArrayList<Integer> edibleGhosts = new ArrayList<>();
+		for (int i = 0; i < NUM_GHOSTS; i++) {
+			if (isEdible(i)) {
+				edibleGhosts.add(getCurGhostLoc(i));
+			}
+		}
+		return edibleGhosts;	
+	}
 }
