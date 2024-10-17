@@ -75,4 +75,8 @@ public class PacManControllerBase implements IPacManController, KeyListener {
 	public void keyReleased(KeyEvent e) {		
 	}
 
+	@Override
+	public void printParams() {
+	}
+
 }

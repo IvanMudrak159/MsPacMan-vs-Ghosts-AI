@@ -87,7 +87,7 @@ public class PacManSimulator {
 					ghostsThread.startThinking();
 					
 					if (!pacManThread.waitForResult(due))
-						System.out.println("[SIMULATOR] PacMan is still thinking!");
+						// System.out.println("[SIMULATOR] PacMan is still thinking!");
 
 					if (!ghostsThread.waitForResult(due))
 						System.out.println("[SIMULATOR] Ghosts are still thinking!");

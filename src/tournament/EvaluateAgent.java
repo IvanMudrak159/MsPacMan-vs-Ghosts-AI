@@ -33,7 +33,12 @@ public class EvaluateAgent {
 		if (resultDir != null) {
             resultDir.mkdirs();
 		}
-						
+		try {
+			config.pacManController =
+				(IPacManController) Class.forName(agentClass).getConstructor().newInstance();
+				config.pacManController.printParams();
+		} catch (Exception e) { throw new RuntimeException(e); }
+
 		for (int i = 0; i < runCount; ++i) {
             config.game.seed = seed + i;
 

@@ -1005,7 +1005,18 @@ public class G implements Game
 	//Returns the MANHATTAN distance between two nodes in the current maze.
 	public int getManhattanDistance(int from,int to)
 	{
-		return (int)(Math.abs(mazes[curMaze].graph[from].x-mazes[curMaze].graph[to].x)+Math.abs(mazes[curMaze].graph[from].y-mazes[curMaze].graph[to].y));
+		if(from >= mazes[curMaze].graph.length) {
+			return 100000;
+		}
+		return (int)(Math.abs(mazes[curMaze].
+		graph[from].
+		x-mazes[curMaze].
+		graph[to].x)+
+		Math.abs(mazes[curMaze].
+		graph[from].
+		y-mazes[curMaze].
+		graph[to].
+		y));
 	}
 	
 	//Returns the path of adjacent nodes from one node to another, including these nodes

@@ -15,6 +15,14 @@ public interface IPacManController
 	 * 
 	 * @param game initial state of the game
 	 */
+	public void printParams();
+
+
+	/**
+	 * Resets the controller before game starts.
+	 * 
+	 * @param game initial state of the game
+	 */
 	public void reset(Game game);
 
 	/**
