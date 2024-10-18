@@ -12,11 +12,11 @@ import game.core.GameView;
 public final class IvanMudrak extends PacManControllerBase {	
 
     private int heuristicDistanceMultiplier = 1;
-    private int heuristicGhostMultiplier = 1;
+    private int heuristicGhostMultiplier = 3;
     private int heuristicSafetyMultiplier = 1;
     private int safetyFee = 3;
-    private int ghostDistance = 1000;
-    private int ghostEdibleReward = 250;
+    private int ghostDistance = 370;
+    private int ghostEdibleReward = 50;
     private int ghostNonEdibleFee = 1000;
 
 	@Override
@@ -96,10 +96,6 @@ public final class IvanMudrak extends PacManControllerBase {
 
         int nextDirection;
         Integer nextNode = GetNextNode(start, goal, cameFrom);
-        // System.out.print("start: " + start + "\n");
-        // System.out.print("goal: " + goal + "\n");
-        // System.out.print("nextNode: " + nextNode + "\n");
-        // System.out.print("----------------------------------\n");
         if(nextNode == start) {
             nextDirection = game.getCurPacManDir();
         } else {
@@ -107,6 +103,11 @@ public final class IvanMudrak extends PacManControllerBase {
         }
         pacman.set(nextDirection);
         ShowPath(game, start, goal, cameFrom, pathColor);
+        // System.out.print("start: " + start + "\n");
+        // System.out.print("goal: " + goal + "\n");
+        // System.out.print("nextNode: " + nextNode + "\n");
+        // System.out.print("----------------------------------\n");
+
     }
     
 
@@ -239,7 +240,7 @@ public final class IvanMudrak extends PacManControllerBase {
                 }
             }
         }
-        H_ghost = Math.clamp(H_ghost, 0, Math.max(-H_ghost, H_ghost));
+        // H_ghost = Math.clamp(H_ghost, 0, Math.max(-H_ghost, H_ghost));
         return H_ghost;
     }
 }
