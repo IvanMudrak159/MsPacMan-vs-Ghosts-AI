@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.PriorityQueue;
 
 import controllers.pacman.PacManControllerBase;
-import game.core.G;
 import game.core.Game;
 import game.core.Game.DM;
 import game.core.GameView;
@@ -194,56 +193,8 @@ public final class IvanMudrak extends PacManControllerBase {
 
     private int GetGoal(int start, Game game) {
         int goal = game.getTarget(start, getAllPillIndicesActive(game), true, DM.MANHATTAN);
-        
         return goal;
     }
-
-
-
-    private int CombinedHeuristic(int pacmanLoc, int[] targets, int[] ghostLocs, int[] ghostEdibleTimes) {
-        // 1. Distance to nearest target (pills/power-pills)
-        int targetDistance = Integer.MAX_VALUE;
-        for (int target : targets) {
-            int distance = game.getManhattanDistance(pacmanLoc, target);
-            targetDistance = Math.min(targetDistance, distance);
-        }
-    
-        // 2. Ghost avoidance: penalize proximity to non-edible ghosts
-        int ghostPenalty = 0;
-        for (int i = 0; i < ghostLocs.length; i++) {
-            if (ghostEdibleTimes[i] == 0) {  // Only consider non-edible ghosts
-                int ghostDistance = game.getManhattanDistance(pacmanLoc, ghostLocs[i]);
-                if (ghostDistance <= 3) {
-                    ghostPenalty += (10 * (4 - ghostDistance));  // Strong penalty for being close to a ghost
-                }
-            }
-        }
-    
-        // 3. Escape route penalty: penalize limited movement options
-        int escapeRoutes = game.getPossiblePacManDirs(true).length;
-        int escapePenalty = (escapeRoutes <= 2) ? (10 * (3 - escapeRoutes)) : 0;
-    
-        // 4. Edible ghost incentive: prioritize chasing edible ghosts
-        int edibleGhostIncentive = 0;
-        for (int i = 0; i < ghostLocs.length; i++) {
-            if (ghostEdibleTimes[i] > 0) {  // Incentive for edible ghosts
-                int edibleGhostDistance = game.getManhattanDistance(pacmanLoc, ghostLocs[i]);
-                edibleGhostIncentive += (5 - edibleGhostDistance);  // Encourage getting closer to edible ghosts
-            }
-        }
-    
-        // Weight each heuristic component
-        int weightedTargetDistance = targetDistance;  // Primary goal: target distance
-        int weightedGhostPenalty = ghostPenalty;      // Ghost avoidance penalty
-        int weightedEscapePenalty = escapePenalty;    // Avoid dead ends
-        int weightedEdibleGhostIncentive = edibleGhostIncentive;  // Incentive to chase edible ghosts
-    
-        // Final heuristic value (minimize this)
-        return weightedTargetDistance + weightedGhostPenalty + weightedEscapePenalty - weightedEdibleGhostIncentive;
-    }
-    
-
-
 
     private int Heuristic(Game game, int nextNodePos, int goalPos) {
 
