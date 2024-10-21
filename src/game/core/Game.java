@@ -179,8 +179,6 @@ public interface Game
     
     //returns the indices of all active power pills in the maze
 	public int[] getPowerPillIndicesActive(); 
-    
-    public int[] getAllPillIndicesActive(); 
 
     //returns true if node is a junction (more than 2 neighbours)
     public boolean isJunction(int nodeIndex);	

@@ -473,9 +473,6 @@ public final class GameView extends JComponent
     	for(int i=0;i<debugPointers.size();i++)
     	{
     		DebugPointer dp=debugPointers.get(i);
-            if (dp == null) {
-                continue;
-            }
     		bufferGraphics.setColor(dp.color);
     		bufferGraphics.fillRect(dp.x*MAG+1,dp.y*MAG+5,10,10);
     	}
@@ -483,18 +480,12 @@ public final class GameView extends JComponent
     	for(int i=0;i<debugLines.size();i++)
     	{
     		DebugLine dl=debugLines.get(i);
-            if (dl == null) {
-                continue;
-            }
     		bufferGraphics.setColor(dl.color);
     		bufferGraphics.drawLine(dl.x1*MAG+5,dl.y1*MAG+10,dl.x2*MAG+5,dl.y2*MAG+10);
     	}
     	
     	for (int i = 0; i < debugTexts.size(); ++i) {
     		DebugText dt = debugTexts.get(i);
-            if (dt == null) {
-                continue;
-            }
     		bufferGraphics.setColor(dt.color);    		
     		bufferGraphics.drawString(dt.text, dt.x*MAG+5, dt.y*MAG+10);
     	}

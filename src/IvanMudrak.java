@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.PriorityQueue;
 
 import controllers.pacman.PacManControllerBase;
+import game.core.G;
 import game.core.Game;
 import game.core.Game.DM;
 import game.core.GameView;
@@ -103,11 +104,6 @@ public final class IvanMudrak extends PacManControllerBase {
         }
         pacman.set(nextDirection);
         ShowPath(game, start, goal, cameFrom, pathColor);
-        // System.out.print("start: " + start + "\n");
-        // System.out.print("goal: " + goal + "\n");
-        // System.out.print("nextNode: " + nextNode + "\n");
-        // System.out.print("----------------------------------\n");
-
     }
     
 
@@ -197,16 +193,63 @@ public final class IvanMudrak extends PacManControllerBase {
 	}
 
     private int GetGoal(int start, Game game) {
-        int goal = game.getTarget(start, game.getAllPillIndicesActive(), true, DM.MANHATTAN);
+        int goal = game.getTarget(start, getAllPillIndicesActive(game), true, DM.MANHATTAN);
         
         return goal;
     }
+
+
+
+    private int CombinedHeuristic(int pacmanLoc, int[] targets, int[] ghostLocs, int[] ghostEdibleTimes) {
+        // 1. Distance to nearest target (pills/power-pills)
+        int targetDistance = Integer.MAX_VALUE;
+        for (int target : targets) {
+            int distance = game.getManhattanDistance(pacmanLoc, target);
+            targetDistance = Math.min(targetDistance, distance);
+        }
+    
+        // 2. Ghost avoidance: penalize proximity to non-edible ghosts
+        int ghostPenalty = 0;
+        for (int i = 0; i < ghostLocs.length; i++) {
+            if (ghostEdibleTimes[i] == 0) {  // Only consider non-edible ghosts
+                int ghostDistance = game.getManhattanDistance(pacmanLoc, ghostLocs[i]);
+                if (ghostDistance <= 3) {
+                    ghostPenalty += (10 * (4 - ghostDistance));  // Strong penalty for being close to a ghost
+                }
+            }
+        }
+    
+        // 3. Escape route penalty: penalize limited movement options
+        int escapeRoutes = game.getPossiblePacManDirs(true).length;
+        int escapePenalty = (escapeRoutes <= 2) ? (10 * (3 - escapeRoutes)) : 0;
+    
+        // 4. Edible ghost incentive: prioritize chasing edible ghosts
+        int edibleGhostIncentive = 0;
+        for (int i = 0; i < ghostLocs.length; i++) {
+            if (ghostEdibleTimes[i] > 0) {  // Incentive for edible ghosts
+                int edibleGhostDistance = game.getManhattanDistance(pacmanLoc, ghostLocs[i]);
+                edibleGhostIncentive += (5 - edibleGhostDistance);  // Encourage getting closer to edible ghosts
+            }
+        }
+    
+        // Weight each heuristic component
+        int weightedTargetDistance = targetDistance;  // Primary goal: target distance
+        int weightedGhostPenalty = ghostPenalty;      // Ghost avoidance penalty
+        int weightedEscapePenalty = escapePenalty;    // Avoid dead ends
+        int weightedEdibleGhostIncentive = edibleGhostIncentive;  // Incentive to chase edible ghosts
+    
+        // Final heuristic value (minimize this)
+        return weightedTargetDistance + weightedGhostPenalty + weightedEscapePenalty - weightedEdibleGhostIncentive;
+    }
+    
+
+
 
     private int Heuristic(Game game, int nextNodePos, int goalPos) {
 
         int H_GoalDistance = GetGoalDistance(game, nextNodePos, goalPos);
         int H_Ghost = GetGhostHeuristic(game);
-        int H_safety = (game.getPossiblePacManDirs(false).length < 2 ) ? safetyFee : 0;
+        int H_safety = GetSafetyHeuristic(game);
         return H_GoalDistance + H_Ghost + H_safety;
     }
 
@@ -243,4 +286,52 @@ public final class IvanMudrak extends PacManControllerBase {
         // H_ghost = Math.clamp(H_ghost, 0, Math.max(-H_ghost, H_ghost));
         return H_ghost;
     }
+
+    private int GetSafetyHeuristic(Game game) {
+        int H_safety = (game.getPossiblePacManDirs(false).length < 2 ) ? safetyFee : 0;
+        return H_safety;
+    }
+
+        
+    public int[] getAllPillIndicesActive(Game game){
+        int[] activePills = game.getPillIndicesActive();
+		int[] activePowerPills = game.getPowerPillIndicesActive();
+		ArrayList<Integer> edibleGhosts = getEdibleGhostsPositions(game);
+		
+		int fruitLoc = game.getFruitLoc();
+		int fruitIndexSize = 0;
+		if(fruitLoc != -1) {
+			fruitIndexSize = 1;
+		}
+
+		int targetsSize = activePills.length+activePowerPills.length + edibleGhosts.size() + fruitIndexSize;
+
+		int[] targetsArray=new int[targetsSize];
+		
+		for(int i=0;i<activePills.length;i++)
+			targetsArray[i]=activePills[i];
+		
+		for(int i=0;i<activePowerPills.length;i++)
+			targetsArray[activePills.length+i]=activePowerPills[i];		
+
+		for (int i = 0; i < edibleGhosts.size(); i++)
+			targetsArray[activePills.length + activePowerPills.length + i] = edibleGhosts.get(i);
+			
+		if(fruitLoc != -1) {
+			targetsArray[targetsSize - 1] = fruitLoc;
+		}
+	
+
+		return targetsArray;
+    }
+
+	public ArrayList<Integer> getEdibleGhostsPositions(Game game) {
+		ArrayList<Integer> edibleGhosts = new ArrayList<>();
+		for (int i = 0; i < Game.NUM_GHOSTS; i++) {
+			if (game.isEdible(i)) {
+				edibleGhosts.add(game.getCurGhostLoc(i));
+			}
+		}
+		return edibleGhosts;	
+	}
 }
