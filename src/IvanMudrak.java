@@ -11,24 +11,10 @@ import game.core.GameView;
 
 public final class IvanMudrak extends PacManControllerBase {	
 
-    private int heuristicDistanceMultiplier = 1;
-    private int heuristicGhostMultiplier = 3;
-    private int heuristicSafetyMultiplier = 1;
     private int safetyFee = 3;
-    private int ghostDistance = 370;
-    private int ghostEdibleReward = 50;
-    private int ghostNonEdibleFee = 1000;
-
-	@Override
-	public void printParams() {
-        System.out.print("heuristic distance multiplier: " + heuristicDistanceMultiplier + "\n");
-        System.out.print("heuristic ghost multiplier: " + heuristicGhostMultiplier + "\n");
-        System.out.print("heuristic safety multiplier: " + heuristicSafetyMultiplier + "\n");
-        System.out.print("ghostDistance: " + ghostDistance + "\n");
-        System.out.print("ghostEdibleReward: " + ghostEdibleReward + "\n");
-        System.out.print("ghostNonEdibleFee: " + ghostNonEdibleFee + "\n");
-	}
-
+    private int ghostDistance = 1000;
+    private int ghostEdibleReward = 500;
+    private int ghostNonEdibleFee = 2500;
 
     @Override
     public void tick(Game game, long timeDue) {
@@ -46,11 +32,15 @@ public final class IvanMudrak extends PacManControllerBase {
         cameFrom.put(start, null);
 
         int goal = GetGoal(start, game);
+        
+        if(game.getNumActivePills() == 1 && game.getDistanceToNearestPill() < 3) {
+            pacman.set(game.getCurPacManDir());
+            return;
+        }
 
         while (!fringe.isEmpty()) {
 
             if (System.currentTimeMillis() >= timeDue) {
-                System.out.println("Time limit reached, stopping A* search.");
                 isTimeout = true;
                 break;
             }
@@ -85,7 +75,6 @@ public final class IvanMudrak extends PacManControllerBase {
         GameView.addLines(game, Color.BLUE, start, goal);
 
         if(!cameFrom.containsKey(goal)) {
-            // System.out.println("Couldn't find a goal: " + goal);
             goal = FindNearestPoint(start, goal, cameFrom);
             pathColor = Color.YELLOW;
         }
@@ -109,20 +98,6 @@ public final class IvanMudrak extends PacManControllerBase {
     private void ShowPath(Game game, int start, int goal, HashMap<Integer, Integer> cameFrom, Color pathColor) {
         int[] path = GetPath(start, goal, cameFrom);
         GameView.addPoints(game, pathColor, path);
-        // String pathString = "path: ";
-        // for(int i = 0; i < path.length; i++) {
-        //     pathString += path[i] + " ";
-        // }
-        // System.out.println(pathString);
-    }
-
-    @SuppressWarnings("unused")
-    private void PrintCameFrom(HashMap<Integer, Integer> cameFrom) {
-        for (Map.Entry<Integer, Integer> entry : cameFrom.entrySet()) {
-            String key = String.valueOf(entry.getKey());
-            Integer value = entry.getValue();
-            System.out.println("Key: " + key + ", Value: " + value);
-        } 
     }
 
     private Integer GetNextNode(int start, int goal, HashMap<Integer, Integer> cameFrom) {
@@ -200,8 +175,8 @@ public final class IvanMudrak extends PacManControllerBase {
 
         int H_GoalDistance = GetGoalDistance(game, nextNodePos, goalPos);
         int H_Ghost = GetGhostHeuristic(game);
-        int H_safety = GetSafetyHeuristic(game);
-        return H_GoalDistance + H_Ghost + H_safety;
+        // int H_safety = GetSafetyHeuristic(game);
+        return H_GoalDistance + H_Ghost;
     }
 
     private int GetGoalDistance(Game game, int nextNodePos, int goalPos) {
@@ -216,9 +191,6 @@ public final class IvanMudrak extends PacManControllerBase {
         for(int i = 0; i < Game.NUM_GHOSTS; i++) 
         {
             int distance = game.getManhattanDistance(start, game.getCurGhostLoc(i));
-            if(distance == 0) {
-                distance = 1;
-            }
             ghostDistances[i] = distance;
         }
 
@@ -227,23 +199,32 @@ public final class IvanMudrak extends PacManControllerBase {
 
             if(ghostDistances[i] < ghostDistance) {
                 if (game.isEdible(i)) {
+                    if(ghostDistances[i] < 3) 
+                    {
+                        H_ghost -= 100000;
+                        continue;
+                    }
                     H_ghost -= ghostEdibleReward * 1 / ghostDistances[i];
                 } 
                 else {
+                    if(ghostDistances[i] < 3) 
+                    {
+                        H_ghost += 10000000;
+                        continue;
+                    }
                     H_ghost += ghostNonEdibleFee * 1 / ghostDistances[i];
                 }
             }
         }
-        // H_ghost = Math.clamp(H_ghost, 0, Math.max(-H_ghost, H_ghost));
         return H_ghost;
     }
 
+    @SuppressWarnings("unused")
     private int GetSafetyHeuristic(Game game) {
         int H_safety = (game.getPossiblePacManDirs(false).length < 2 ) ? safetyFee : 0;
         return H_safety;
     }
 
-        
     public int[] getAllPillIndicesActive(Game game){
         int[] activePills = game.getPillIndicesActive();
 		int[] activePowerPills = game.getPowerPillIndicesActive();
