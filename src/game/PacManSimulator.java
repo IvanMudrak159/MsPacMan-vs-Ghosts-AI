@@ -53,6 +53,7 @@ public class PacManSimulator {
 		
 		int lastLevel = game.getCurLevel();
 		
+
 		// START CONTROLLERS (threads auto-start during instantiation)
 		ThinkingThread pacManThread = 
 			new ThinkingThread(
@@ -76,6 +77,11 @@ public class PacManSimulator {
 				}
 			);
         
+		PerformanceChecker checker = new PerformanceChecker();
+		checker.CheckCopy(game.copy());
+		checker.CheckAdvance(game.copy());
+		checker.CheckAStar(config.pacManController, game.copy(), due);
+
 		// START THE GAME
 		try {
 			while(!game.gameOver())
