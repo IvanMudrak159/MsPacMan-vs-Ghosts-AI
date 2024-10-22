@@ -12,7 +12,7 @@ import game.core.GameView;
 public final class IvanMudrak extends PacManControllerBase {	
 
     private int safetyFee = 3;
-    private int ghostDistance = 1000;
+    private int ghostDistance = 500;
     private int ghostEdibleReward = 500;
     private int ghostNonEdibleFee = 2500;
 
